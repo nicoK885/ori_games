@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ori Games</title>
+</head>
+<body>
+  <h1>Ori Games</h1>
+  <p>A little selection of cute little games based on Ori.</p>
+
+  <h2>Spiele</h2>
+
+  <p><a href="many_oris/">Many Oris spielen</a></p>
+  <p><a href="fluesterlichter/">Flüsterlichter spielen</a></p>
+  <p><a href="wunschlichter/">Wunschlichter spielen</a></p>
+  <p><a href="sternenflug/">Sternenflug spielen</a></p>
+  <p><a href="sternenfaenger/">Sternenfänger spielen</a></p>
+  <p><a href="ori_jagd/">Ori Jagd spielen</a></p>
+</body>
+</html>
