@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#090612">
+<meta name="description" content="Many Oris V3 – das interaktive Schwarmspiel mit vier neuen Dirndl-Posen.">
+<title>Many Oris V3 – Dirndl Edition</title>
+<style>
+  :root{--glass:rgba(39,24,54,.56);--line:rgba(255,226,230,.22);--text:#fff8f5;--muted:rgba(255,238,237,.66);--red:#d93e4f;--gold:#ffd6a1;}
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090612;overscroll-behavior:none;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+  body{position:fixed;inset:0;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+  #hint{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 18px);transform:translateX(-50%);
+    z-index:7;pointer-events:none;width:min(88vw,560px);text-align:center;color:var(--muted);font-size:13px;font-weight:700;
+    letter-spacing:.02em;text-shadow:0 2px 10px rgba(0,0,0,.65);transition:opacity .8s ease}
+  #hint.hidden{opacity:0}
+  #snd{position:fixed;right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 12px);
+    z-index:10;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--glass);color:#fff;
+    font-size:18px;display:grid;place-items:center;backdrop-filter:blur(12px);cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+  #snd.off{opacity:.48}
+  #abilities{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 69px);transform:translateX(-50%);
+    z-index:9;width:min(92vw,520px);display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .ab{height:47px;border-radius:16px;border:1px solid var(--line);color:#fff;background:linear-gradient(180deg,rgba(119,45,72,.55),rgba(52,24,61,.52));
+    box-shadow:0 10px 28px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(10px);
+    font-size:11px;font-weight:850;cursor:pointer;touch-action:manipulation;transition:transform .14s ease,filter .14s ease}
+  .ab .ico{display:block;font-size:17px;line-height:15px;margin-bottom:3px}
+  .ab:active,.ab.flash{transform:translateY(1px) scale(.96);filter:brightness(1.3)}
+  #size{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 17px);transform:translateX(-50%);
+    z-index:9;width:min(66vw,330px);height:42px;display:flex;align-items:center;opacity:.7;touch-action:none;transition:opacity .2s}
+  #size.active{opacity:1}
+  #track{position:relative;width:100%;height:6px;border-radius:99px;background:rgba(255,238,240,.14);box-shadow:inset 0 1px 5px rgba(0,0,0,.35)}
+  #fill{position:absolute;left:0;top:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#aa3247,#ffd6a1)}
+  #knob{position:absolute;top:50%;width:26px;height:26px;border-radius:50%;transform:translate(-50%,-50%);
+    background:radial-gradient(circle at 35% 30%,#fff8e9,#ffd6a1 48%,#bb4d58);box-shadow:0 0 14px rgba(255,173,166,.58),0 4px 12px rgba(0,0,0,.4)}
+  #size .lbl{position:absolute;bottom:30px;color:rgba(255,238,237,.48);font-size:11px;font-weight:700}
+  #size .l{left:0} #size .r{right:0}
+  #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 68px);transform:translateX(-50%) translateY(-8px);
+    z-index:11;opacity:0;pointer-events:none;padding:8px 14px;border-radius:999px;background:rgba(24,10,32,.64);border:1px solid var(--line);
+    color:#fff;font-size:13px;font-weight:850;letter-spacing:.03em;backdrop-filter:blur(10px);transition:opacity .18s,transform .18s}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(max-width:380px){#abilities{gap:6px}.ab{height:44px;border-radius:14px;font-size:10px}.ab .ico{font-size:16px}}
+  @media(prefers-reduced-motion:reduce){#hint,#toast,.ab{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Interaktives Many-Oris-Spiel"></canvas>
+<div id="hint">Zieh durch die Menge, tippe für eine Welle oder nutze unten eine Fähigkeit.</div>
+<button id="snd" aria-label="Ton an oder aus">♪</button>
+<div id="toast"></div>
+<div id="abilities" aria-label="Fähigkeiten">
+  <button class="ab" data-ability="shock"><span class="ico">◉</span>Welle</button>
+  <button class="ab" data-ability="vortex"><span class="ico">↻</span>Wirbel</button>
+  <button class="ab" data-ability="stars"><span class="ico">✦</span>Sterne</button>
+  <button class="ab" data-ability="bloom"><span class="ico">❀</span>Blüte</button>
+</div>
+<div id="size"><span class="lbl l">klein</span><span class="lbl r">gross</span><div id="track"><div id="fill"></div><div id="knob"></div></div></div>
+
+<script src="./atlas1.js"></script>
+<script src="./atlas2.js"></script>
+<script src="./atlas3.js"></script>
+<script src="./atlas4.js"></script>
+<script src="./game.js"></script>
+</body>
+</html>
