@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06050f">
+<meta name="description" content="Many Oris V3 – das bekannte Schwarmspiel mit vier neuen Dirndl-Posen.">
+<title>Many Oris V3 – Dirndl Edition</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06050f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#06050f}
+  #loading{position:fixed;inset:0;z-index:2;display:grid;place-items:center;color:rgba(238,232,255,.72);font-size:14px;font-weight:700;letter-spacing:.03em;background:#06050f}
+</style>
+</head>
+<body>
+<div id="loading">Die Menge wird vorbereitet …</div>
+<iframe id="game" title="Many Oris V3"></iframe>
+<script src="./atlas1.js"></script>
+<script src="./atlas2.js"></script>
+<script src="./atlas3.js"></script>
+<script src="./atlas4.js"></script>
+<script>
+(async()=>{
+  const loading=document.getElementById('loading');
+  const game=document.getElementById('game');
+  try{
+    const response=await fetch('../many_oris_v2/index.html',{cache:'no-store'});
+    if(!response.ok) throw new Error(`Many Oris V2 konnte nicht geladen werden (${response.status}).`);
+    let html=await response.text();
+    const sprite=`const sprite=new Image(); sprite.src=${JSON.stringify(window.MANY_ORIS_SPRITE)};`;
+    html=html
+      .replace('<title>In der Menge</title>','<title>Many Oris V3 – Dirndl Edition</title>')
+      .replace('Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge — oder löse unten eine Fähigkeit aus.')
+      .replace('const FW=198, CH=320, ANGRY=4;','const FW=90, CH=180, ANGRY=3;')
+      .replace('const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2,3].map(i=>({sx:2+i*92,sy:2,sw:FW,sh:CH}));')
+      .replace('const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.34,0.26,0.22,0.18];')
+      .replace(/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,sprite);
+    if(!html.includes(window.MANY_ORIS_SPRITE.slice(0,80))) throw new Error('Das neue Sprite konnte nicht eingesetzt werden.');
+    game.addEventListener('load',()=>loading.remove(),{once:true});
+    game.srcdoc=html;
+  }catch(error){
+    console.error(error);
+    loading.textContent='Das Spiel konnte nicht geladen werden.';
+  }
+})();
+</script>
+</body>
+</html>
