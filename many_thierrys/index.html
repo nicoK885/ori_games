@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#06050f">
-<meta name="description" content="Many Thierrys – aufgebaut auf der bewährten Many-Oris-V3-Mechanik.">
+<meta name="description" content="Many Thierrys – drei gleichmässig gemischte Posen auf der Many-Oris-V3-Mechanik.">
 <title>Many Thierrys – wird geladen</title>
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06050f;color:#ddd8f6;font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -16,9 +16,9 @@ body{display:grid;place-items:center;text-align:center}
 </head>
 <body>
 <div id="loading">Die Menge wird vorbereitet …</div>
-<script src="./pose1.js?v=9"></script>
-<script src="./pose2.js?v=9"></script>
-<script src="./pose3.js?v=9"></script>
+<script src="./pose1.js?v=12"></script>
+<script src="./pose2.js?v=12"></script>
+<script src="./pose3.js?v=12"></script>
 <script>
 (async()=>{
   const loading=document.getElementById('loading');
@@ -43,10 +43,11 @@ body{display:grid;place-items:center;text-align:center}
   }
 
   async function createAtlas(){
-    const sources=(window.MANY_THIERRYS_POSES||[]).filter(Boolean).slice(0,3);
-    const loaded=(await Promise.all(sources.map(loadImage))).filter(Boolean);
-    if(!loaded.length) throw new Error('Keine Thierry-Pose konnte geladen werden.');
-    while(loaded.length<3) loaded.push(loaded[0]);
+    const sources=[0,1,2].map(index=>(window.MANY_THIERRYS_POSES||[])[index]);
+    const loaded=await Promise.all(sources.map(loadImage));
+    const fallback=loaded.find(Boolean);
+    if(!fallback) throw new Error('Keine Thierry-Pose konnte geladen werden.');
+    const poses=loaded.map(image=>image||fallback);
 
     const FW=90,CH=180,PAD=2,STEP=92;
     const canvas=document.createElement('canvas');
@@ -57,7 +58,7 @@ body{display:grid;place-items:center;text-align:center}
     context.imageSmoothingEnabled=true;
     try{context.imageSmoothingQuality='high'}catch(e){}
 
-    loaded.slice(0,3).forEach((image,index)=>{
+    poses.forEach((image,index)=>{
       const scale=Math.min(FW/image.naturalWidth,CH/image.naturalHeight);
       const width=image.naturalWidth*scale;
       const height=image.naturalHeight*scale;
@@ -70,7 +71,7 @@ body{display:grid;place-items:center;text-align:center}
 
   try{
     const atlas=await createAtlas();
-    const response=await fetch('../many_oris_v2/index.html?v=20260627-9',{cache:'no-store'});
+    const response=await fetch('../many_oris_v2/index.html?v=20260627-12',{cache:'no-store'});
     if(!response.ok) throw new Error('Many Oris V2 konnte nicht geladen werden ('+response.status+').');
     let html=await response.text();
 
@@ -78,12 +79,11 @@ body{display:grid;place-items:center;text-align:center}
     html=patch(html,'Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge – die Thierrys weichen aus und schieben einander weiter.','Hinweis');
     html=patch(html,'const FW=198, CH=320, ANGRY=4;','const FW=90, CH=180, ANGRY=2;','Atlas-Grösse');
     html=patch(html,'const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2].map(i=>({sx:2+i*92,sy:2,sw:FW,sh:CH}));','Atlas-Frames');
-    html=patch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.38,0.31,0.31];','Posen');
+    html=patch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.34,0.33,0.33];','Posen');
 
     const spriteLoader='const sprite=new Image(); sprite.src='+JSON.stringify(atlas)+';';
     html=patch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,spriteLoader,'Sprite');
 
-    // Mechanik und Reaktionsgefühl direkt von V3.
     html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.145, 0.285], OPEN_EASE: 0.27,','Reaktion');
     html=patch(html,'REACH: 2.3,','REACH: 2.8,','Reichweite');
     html=patch(html,'let dx=baseX-p.x, dy=baseY-p.y, d=Math.hypot(dx,dy);','let dx=baseX-p.x, dy=(baseY-c.dh*0.48)-p.y, d=Math.hypot(dx,dy);','Ganzkörper-Trefferzone');
