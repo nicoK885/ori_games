@@ -16,7 +16,7 @@ body{display:grid;place-items:center;text-align:center}
 </head>
 <body>
 <div id="loading">Die Thierrys werden vorbereitet …</div>
-<script src="./atlas.js"></script>
+<script src="./atlas1.js?v=3"></script>
 <script>
 (async()=>{
   const loading=document.getElementById('loading');
@@ -26,19 +26,22 @@ body{display:grid;place-items:center;text-align:center}
     return result;
   }
   try{
-    const response=await fetch('../many_oris_v2/index.html?v=20260627-2',{cache:'no-store'});
+    const response=await fetch('../many_oris_v2/index.html?v=20260627-3',{cache:'no-store'});
     if(!response.ok) throw new Error('Many Oris V2 konnte nicht geladen werden ('+response.status+').');
     let html=await response.text();
 
     html=patch(html,'<title>In der Menge</title>','<title>Many Thierrys</title>','Titel');
     html=patch(html,'Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge – die Thierrys weichen aus und schieben einander weiter.','Hinweis');
+    html=patch(html,'AREA_PER_FIGURE: 1250, MAX: 2600,','AREA_PER_FIGURE: 2200, MAX: 900,','Figurendichte');
+    html=patch(html,'const target=clamp(Math.floor(area/CONFIG.AREA_PER_FIGURE),200,1300);','const target=clamp(Math.floor(area/CONFIG.AREA_PER_FIGURE),110,620);','Anzahl Figuren');
     html=patch(html,'const FW=198, CH=320, ANGRY=4;','const FW=170, CH=320, ANGRY=2;','Atlas-Grösse');
     html=patch(html,'const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2].map(i=>({sx:i*170,sy:0,sw:FW,sh:CH}));','Atlas-Frames');
     html=patch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.38,0.31,0.31];','Posen');
 
-    const spriteLoader='const sprite=new Image(); sprite.src=window.MANY_THIERRYS_SPRITE;';
+    const spriteLoader="const sprite=new Image(); sprite.src=window.MANY_THIERRYS_SPRITE;";
     html=patch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,spriteLoader,'Sprite');
 
+    html=patch(html,'const canvas=document.getElementById(\'c\'); const ctx=canvas.getContext(\'2d\');',"const canvas=document.getElementById('c'); const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=true; try{ctx.imageSmoothingQuality='high';}catch(e){}",'Bildqualität');
     html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.145, 0.285], OPEN_EASE: 0.27,','Reaktion');
     html=patch(html,'REACH: 2.3,','REACH: 2.8,','Reichweite');
     html=patch(html,'let dx=baseX-p.x, dy=baseY-p.y, d=Math.hypot(dx,dy);','let dx=baseX-p.x, dy=(baseY-c.dh*0.48)-p.y, d=Math.hypot(dx,dy);','Ganzkörper-Trefferzone');
@@ -53,7 +56,7 @@ body{display:grid;place-items:center;text-align:center}
 
     const collision=`
 function resolveCrowdSeparation(){
-  const cell=32,grid=new Map(),active=[];
+  const cell=36,grid=new Map(),active=[];
   for(let i=0;i<crowd.length;i++){
     const c=crowd[i];c._cx=c.x;c._cy=c.y-c.dh*0.48;
     const gx=Math.floor(c._cx/cell),gy=Math.floor(c._cy/cell),key=gx+','+gy;
@@ -66,9 +69,9 @@ function resolveCrowdSeparation(){
       const bucket=grid.get((gx+ox)+','+(gy+oy));if(!bucket)continue;
       for(const j of bucket){if(j<=i)continue;const b=crowd[j];
         let dx=a.x-b.x,dy=((a.y-a.dh*0.48)-(b.y-b.dh*0.48))*0.72,d=Math.hypot(dx,dy);
-        const min=Math.max(10,(a.dw+b.dw)*0.38);if(d>=min)continue;
+        const min=Math.max(11,(a.dw+b.dw)*0.34);if(d>=min)continue;
         if(d<0.01){dx=0.01;dy=0.01;d=0.014}const nx=dx/d,ny=dy/d,over=min-d;
-        const move=Math.min(3.2,over*0.22),kick=Math.min(2.3,0.08+over*0.17);
+        const move=Math.min(2.8,over*0.18),kick=Math.min(2.0,0.07+over*0.15);
         a.x+=nx*move;a.y+=ny*move*0.72;b.x-=nx*move;b.y-=ny*move*0.72;
         a.velx+=nx*kick;a.vely+=ny*kick*0.72;b.velx-=nx*kick;b.vely-=ny*kick*0.72;
         a.att=Math.max(a.att,0.25);b.att=Math.max(b.att,0.21);
