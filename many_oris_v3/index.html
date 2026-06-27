@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#06050f">
-<meta name="description" content="Many Oris V3 – das bekannte Schwarmspiel mit vier neuen Dirndl-Posen.">
+<meta name="description" content="Many Oris V3 – das Schwarmspiel mit vier Dirndl-Posen und verbesserter Verdrängungsphysik.">
 <title>Many Oris V3 – Dirndl Edition</title>
 <style>
   html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06050f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -25,18 +25,94 @@
 (async()=>{
   const loading=document.getElementById('loading');
   const game=document.getElementById('game');
+
+  function applyPatch(source,pattern,replacement,label){
+    const result=source.replace(pattern,replacement);
+    if(result===source) throw new Error(`Patch fehlgeschlagen: ${label}`);
+    return result;
+  }
+
   try{
     const response=await fetch('../many_oris_v2/index.html',{cache:'no-store'});
     if(!response.ok) throw new Error(`Many Oris V2 konnte nicht geladen werden (${response.status}).`);
     let html=await response.text();
+
     const sprite=`const sprite=new Image(); sprite.src=${JSON.stringify(window.MANY_ORIS_SPRITE)};`;
-    html=html
-      .replace('<title>In der Menge</title>','<title>Many Oris V3 – Dirndl Edition</title>')
-      .replace('Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge — oder löse unten eine Fähigkeit aus.')
-      .replace('const FW=198, CH=320, ANGRY=4;','const FW=90, CH=180, ANGRY=3;')
-      .replace('const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2,3].map(i=>({sx:2+i*92,sy:2,sw:FW,sh:CH}));')
-      .replace('const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.34,0.26,0.22,0.18];')
-      .replace(/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,sprite);
+    html=applyPatch(html,'<title>In der Menge</title>','<title>Many Oris V3 – Dirndl Edition</title>','Titel');
+    html=applyPatch(html,'Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge – die Figuren weichen aus und schieben einander weiter.','Hinweis');
+    html=applyPatch(html,'const FW=198, CH=320, ANGRY=4;','const FW=90, CH=180, ANGRY=3;','Atlas-Grösse');
+    html=applyPatch(html,'const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2,3].map(i=>({sx:2+i*92,sy:2,sw:FW,sh:CH}));','Atlas-Frames');
+    html=applyPatch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.34,0.26,0.22,0.18];','Posenverteilung');
+    html=applyPatch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,sprite,'Sprite');
+
+    // V1 reagierte direkter auf den Finger. V2 brachte weichere Bewegung und Fähigkeiten.
+    // V3 kombiniert beides und ergänzt echte Weitergabe der Bewegung zwischen den Figuren.
+    html=applyPatch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.135, 0.260], OPEN_EASE: 0.24,','Reaktionsgeschwindigkeit');
+    html=applyPatch(html,'REACH: 2.3,','REACH: 2.6,','Reichweite');
+    html=applyPatch(
+      html,
+      'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * c.dodge;',
+      'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * (1.08 + c.dodge*0.22);',
+      'Fingerverdrängung'
+    );
+    html=applyPatch(
+      html,
+      'const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;\n    c.velx+=(dvx-c.velx)*c.inert; c.vely+=(dvy-c.vely)*c.inert;',
+      `const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;
+    const urgency=clamp(maxDisp/Math.max(1,Reff),0,1);
+    const response=c.inert+urgency*0.18;
+    c.velx+=(dvx-c.velx)*response; c.vely+=(dvy-c.vely)*response;
+    if(urgency>0.015){
+      c.velx+=(tx-c.x)*(0.022+urgency*0.040);
+      c.vely+=(ty-c.y)*(0.022+urgency*0.040);
+    }`,
+      'Direktimpuls'
+    );
+
+    const separationPhysics=`
+function resolveCrowdSeparation(){
+  if(!crowd.length) return;
+  const cell=Math.max(34,Math.min(58,R*0.52));
+  const grid=new Map(), active=[];
+
+  for(let i=0;i<crowd.length;i++){
+    const c=crowd[i];
+    c._cx=c.x; c._cy=c.y-c.dh*0.43;
+    const gx=Math.floor(c._cx/cell), gy=Math.floor(c._cy/cell), key=gx+','+gy;
+    let bucket=grid.get(key); if(!bucket){bucket=[];grid.set(key,bucket);} bucket.push(i);
+    if(c.att>0.018 || c.anger>0.05 || c.spark>0.05 || Math.hypot(c.velx,c.vely)>0.28) active.push(i);
+  }
+
+  const seen=new Set();
+  for(const i of active){
+    const a=crowd[i], gx=Math.floor(a._cx/cell), gy=Math.floor(a._cy/cell);
+    for(let oy=-1;oy<=1;oy++) for(let ox=-1;ox<=1;ox++){
+      const bucket=grid.get((gx+ox)+','+(gy+oy)); if(!bucket) continue;
+      for(const j of bucket){
+        if(i===j) continue;
+        const pair=i<j?i+':'+j:j+':'+i; if(seen.has(pair)) continue; seen.add(pair);
+        const b=crowd[j];
+        let dx=a._cx-b._cx, dy=(a._cy-b._cy)*0.72;
+        let dist=Math.hypot(dx,dy);
+        const minDist=Math.max(11,(a.dw+b.dw)*0.34);
+        if(dist>=minDist) continue;
+        if(dist<0.001){dx=(i&1)?0.001:-0.001;dy=0.001;dist=Math.hypot(dx,dy);}
+        const nx=dx/dist, ny=dy/dist, overlap=minDist-dist;
+        const impulse=Math.min(R*0.105,0.07+overlap*0.19);
+        const correction=Math.min(2.4,overlap*0.09);
+        a.velx+=nx*impulse; a.vely+=ny*impulse*0.72;
+        b.velx-=nx*impulse; b.vely-=ny*impulse*0.72;
+        a.x+=nx*correction; a.y+=ny*correction*0.72;
+        b.x-=nx*correction; b.y-=ny*correction*0.72;
+        a.att=Math.max(a.att,0.22); b.att=Math.max(b.att,0.18);
+      }
+    }
+  }
+}
+`;
+    html=applyPatch(html,'function step(now){',separationPhysics+'\nfunction step(now){','Kollisionsfunktion');
+    html=applyPatch(html,'  stir=frameStir;','  resolveCrowdSeparation();\n  stir=frameStir;','Kollisionsaufruf');
+
     if(!html.includes(window.MANY_ORIS_SPRITE.slice(0,80))) throw new Error('Das neue Sprite konnte nicht eingesetzt werden.');
     game.addEventListener('load',()=>loading.remove(),{once:true});
     game.srcdoc=html;
