@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06050f">
+<meta name="description" content="Many Thierrys – das Schwarmspiel mit drei Thierry-Posen und echter Verdrängungsphysik.">
+<title>Many Thierrys – wird geladen</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06050f;color:#ddd8f6;font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:grid;place-items:center;text-align:center}
+#loading{max-width:80vw;line-height:1.5;opacity:.75}
+</style>
+</head>
+<body>
+<div id="loading">Die Thierrys werden vorbereitet …</div>
+<script src="./atlas.js"></script>
+<script>
+(async()=>{
+  const loading=document.getElementById('loading');
+  function patch(source,pattern,replacement,label){
+    const result=source.replace(pattern,replacement);
+    if(result===source) throw new Error('Patch fehlgeschlagen: '+label);
+    return result;
+  }
+  try{
+    const response=await fetch('../many_oris_v2/index.html?v=20260627-2',{cache:'no-store'});
+    if(!response.ok) throw new Error('Many Oris V2 konnte nicht geladen werden ('+response.status+').');
+    let html=await response.text();
+
+    html=patch(html,'<title>In der Menge</title>','<title>Many Thierrys</title>','Titel');
+    html=patch(html,'Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge – die Thierrys weichen aus und schieben einander weiter.','Hinweis');
+    html=patch(html,'const FW=198, CH=320, ANGRY=4;','const FW=170, CH=320, ANGRY=2;','Atlas-Grösse');
+    html=patch(html,'const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2].map(i=>({sx:i*170,sy:0,sw:FW,sh:CH}));','Atlas-Frames');
+    html=patch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.38,0.31,0.31];','Posen');
+
+    const spriteLoader='const sprite=new Image(); sprite.src=window.MANY_THIERRYS_SPRITE;';
+    html=patch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,spriteLoader,'Sprite');
+
+    html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.145, 0.285], OPEN_EASE: 0.27,','Reaktion');
+    html=patch(html,'REACH: 2.3,','REACH: 2.8,','Reichweite');
+    html=patch(html,'let dx=baseX-p.x, dy=baseY-p.y, d=Math.hypot(dx,dy);','let dx=baseX-p.x, dy=(baseY-c.dh*0.48)-p.y, d=Math.hypot(dx,dy);','Ganzkörper-Trefferzone');
+    html=patch(html,'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * c.dodge;','const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * (1.15+c.dodge*0.28);','Verdrängung');
+    html=patch(html,
+      'const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;\n    c.velx+=(dvx-c.velx)*c.inert; c.vely+=(dvy-c.vely)*c.inert;',
+      `const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;
+    const urgency=clamp(maxDisp/Math.max(1,Reff),0,1),response=c.inert+urgency*0.22;
+    c.velx+=(dvx-c.velx)*response; c.vely+=(dvy-c.vely)*response;
+    if(urgency>0.01){c.velx+=(tx-c.x)*(0.028+urgency*0.052);c.vely+=(ty-c.y)*(0.028+urgency*0.052);}`,
+      'Direkter Impuls');
+
+    const collision=`
+function resolveCrowdSeparation(){
+  const cell=32,grid=new Map(),active=[];
+  for(let i=0;i<crowd.length;i++){
+    const c=crowd[i];c._cx=c.x;c._cy=c.y-c.dh*0.48;
+    const gx=Math.floor(c._cx/cell),gy=Math.floor(c._cy/cell),key=gx+','+gy;
+    let bucket=grid.get(key);if(!bucket){bucket=[];grid.set(key,bucket)}bucket.push(i);
+    if(c.att>0.012||c.anger>0.04||c.spark>0.04||Math.hypot(c.velx,c.vely)>0.20)active.push(i);
+  }
+  for(let pass=0;pass<2;pass++)for(const i of active){
+    const a=crowd[i],gx=Math.floor(a._cx/cell),gy=Math.floor(a._cy/cell);
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+      const bucket=grid.get((gx+ox)+','+(gy+oy));if(!bucket)continue;
+      for(const j of bucket){if(j<=i)continue;const b=crowd[j];
+        let dx=a.x-b.x,dy=((a.y-a.dh*0.48)-(b.y-b.dh*0.48))*0.72,d=Math.hypot(dx,dy);
+        const min=Math.max(10,(a.dw+b.dw)*0.38);if(d>=min)continue;
+        if(d<0.01){dx=0.01;dy=0.01;d=0.014}const nx=dx/d,ny=dy/d,over=min-d;
+        const move=Math.min(3.2,over*0.22),kick=Math.min(2.3,0.08+over*0.17);
+        a.x+=nx*move;a.y+=ny*move*0.72;b.x-=nx*move;b.y-=ny*move*0.72;
+        a.velx+=nx*kick;a.vely+=ny*kick*0.72;b.velx-=nx*kick;b.vely-=ny*kick*0.72;
+        a.att=Math.max(a.att,0.25);b.att=Math.max(b.att,0.21);
+      }
+    }
+  }
+}
+`;
+    html=patch(html,'function step(now){',collision+'\nfunction step(now){','Kollisionsphysik');
+    html=patch(html,'  stir=frameStir;','  resolveCrowdSeparation();\n  stir=frameStir;','Kollisionsaufruf');
+
+    html=html.replace('</head>','<style>html,body{background:#06050f!important}canvas{background:#06050f}</style></head>');
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(error){
+    console.error(error);
+    loading.textContent='Das Spiel konnte nicht geladen werden. Bitte die Seite neu laden.';
+  }
+})();
+</script>
+</body>
+</html>

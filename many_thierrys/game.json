@@ -1,0 +1,9 @@
+{
+  "title": "Many Thierrys",
+  "description": "Das Many-Oris-Schwarmspiel mit drei Thierry-Posen.",
+  "icon": "T",
+  "tag": "Neu",
+  "series": "other",
+  "priority": 330,
+  "glow": "rgba(255,216,119,.24)"
+}
