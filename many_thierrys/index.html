@@ -1,13 +1,139 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#080711"><title>Many Thierrys</title><style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080711;overscroll-behavior:none;-webkit-user-select:none;user-select:none}body{position:fixed;inset:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#fff}canvas{display:block;width:100%;height:100%;touch-action:none}#hint{position:fixed;z-index:3;left:50%;top:calc(env(safe-area-inset-top) + 18px);transform:translateX(-50%);width:78vw;text-align:center;color:rgba(235,232,255,.65);font-size:13px;font-weight:700;text-shadow:0 2px 10px #000;transition:.5s}#hint.hide{opacity:0}.bar{position:fixed;z-index:4;left:50%;bottom:calc(env(safe-area-inset-bottom) + 70px);transform:translateX(-50%);width:min(92vw,520px);display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.bar button{height:48px;border-radius:17px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(180deg,rgba(103,91,154,.68),rgba(28,25,48,.88));color:#fff;font:800 11px system-ui;box-shadow:0 10px 26px rgba(0,0,0,.35)}.bar b{display:block;font-size:18px;line-height:16px;margin-bottom:3px}.bar button:active{transform:scale(.96)}#size{position:fixed;z-index:4;left:50%;bottom:calc(env(safe-area-inset-bottom) + 19px);transform:translateX(-50%);width:min(68vw,340px);height:40px;display:flex;align-items:center;touch-action:none}#track{position:relative;width:100%;height:6px;border-radius:9px;background:rgba(255,255,255,.14)}#fill{height:100%;width:36%;border-radius:inherit;background:linear-gradient(90deg,#8f7add,#8ee7ff)}#knob{position:absolute;left:36%;top:50%;width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 30%,#fff,#d7ceff 48%,#7562c4);box-shadow:0 0 16px rgba(190,170,255,.8)}#size span{position:absolute;bottom:29px;color:rgba(235,232,255,.4);font-size:11px}.r{right:0}.l{left:0}
-</style></head><body><canvas id="c"></canvas><div id="hint">Zieh durch die Menge – die Thierrys weichen aus.</div><div class="bar"><button data-a="wave"><b>◉</b>Welle</button><button data-a="spin"><b>↻</b>Wirbel</button><button data-a="star"><b>✦</b>Sterne</button><button data-a="bloom"><b>◌</b>Blüte</button></div><div id="size"><span class="l">klein</span><span class="r">groß</span><div id="track"><div id="fill"></div><div id="knob"></div></div></div><script src="./pose1.js?v=7"></script><script>
-(()=>{const C=document.getElementById('c'),X=C.getContext('2d',{alpha:false}),hint=document.getElementById('hint'),track=document.getElementById('track'),fill=document.getElementById('fill'),knob=document.getElementById('knob');let W=0,H=0,D=1,R=100,img=null,ready=false,people=[],pointer=null,effects=[];const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function load(){const src=window.MANY_THIERRYS_POSES&&window.MANY_THIERRYS_POSES[0];if(!src)return Promise.resolve();return new Promise(ok=>{const i=new Image;i.onload=()=>{img=i;ready=true;ok()};i.onerror=()=>ok();i.src=src;setTimeout(ok,2500)})}
-function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;C.width=W*D;C.height=H*D;C.style.width=W+'px';C.style.height=H+'px';X.setTransform(D,0,0,D,0,0);build()}
-function build(){people=[];const n=clamp(Math.round(W*H/2700),110,360),gap=Math.sqrt(W*H/n);let y=0,row=0;while(y<H+gap&&people.length<n){const s=gap*(.75+.2*y/H),dx=s*.78,off=row%2?dx/2:0;for(let px=-dx;px<W+dx&&people.length<n;px+=dx){const h=s*rnd(1.95,2.35),hx=px+off+rnd(-4,4),hy=y+rnd(-4,4);people.push({hx,hy,x:hx,y:hy,vx:0,vy:0,h,w:h*.5625,flip:Math.random()<.5?-1:1,p:rnd(0,6.28)})}y+=s;row++}}
-function fallback(p){X.save();X.translate(p.x,p.y);X.scale(p.flip,1);X.fillStyle='#d8d3e8';X.beginPath();X.arc(0,-p.h*.79,p.w*.16,0,7);X.fill();X.fillRect(-p.w*.22,-p.h*.64,p.w*.44,p.h*.48);X.fillRect(-p.w*.2,-p.h*.18,p.w*.15,p.h*.18);X.fillRect(p.w*.05,-p.h*.18,p.w*.15,p.h*.18);X.restore()}
-function push(cx,cy,str=1){effects.push({x:cx,y:cy,t:performance.now(),s:str})}
-function step(t){for(const p of people){p.vx+=(p.hx-p.x)*.018;p.vy+=(p.hy-p.y)*.018;const cx=p.x,cy=p.y-p.h*.48;if(pointer){let dx=cx-pointer.x,dy=cy-pointer.y,d=Math.hypot(dx,dy)||1,reach=R*2.3;if(d<reach){const f=1-d/reach,k=f*f*(1.1+pointer.speed*.035);p.vx+=dx/d*k;p.vy+=dy/d*k}}for(const e of effects){const age=t-e.t,rad=age*.75;if(age>900)continue;let dx=cx-e.x,dy=cy-e.y,d=Math.hypot(dx,dy)||1,k=Math.exp(-Math.pow((d-rad)/38,2))*(1-age/900)*e.s*2.2;p.vx+=dx/d*k;p.vy+=dy/d*k}p.vx*=.88;p.vy*=.88;const m=Math.hypot(p.vx,p.vy);if(m>8){p.vx*=8/m;p.vy*=8/m}p.x+=p.vx;p.y+=p.vy}effects=effects.filter(e=>t-e.t<900)}
-function draw(t){X.setTransform(D,0,0,D,0,0);const g=X.createLinearGradient(0,0,0,H);g.addColorStop(0,'#100d20');g.addColorStop(.55,'#17122f');g.addColorStop(1,'#080711');X.fillStyle=g;X.fillRect(0,0,W,H);for(const p of people){const bob=Math.sin(t*.001+p.p)*p.h*.007;X.save();X.translate(p.x,p.y-bob);X.rotate(clamp(p.vx*.012,-.1,.1));X.scale(p.flip,1);if(ready)X.drawImage(img,-p.w/2,-p.h,p.w,p.h);else{X.restore();fallback(p);continue}X.restore()}X.save();X.globalCompositeOperation='screen';for(const e of effects){const age=t-e.t,a=1-age/900;if(a<=0)continue;X.strokeStyle=`rgba(190,210,255,${a*.5})`;X.lineWidth=3;X.beginPath();X.arc(e.x,e.y,age*.75,0,7);X.stroke()}X.restore()}
-function loop(t){step(t);draw(t);requestAnimationFrame(loop)}function pos(e){const r=C.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}C.addEventListener('pointerdown',e=>{e.preventDefault();hint.classList.add('hide');const p=pos(e);pointer={...p,lx:p.x,ly:p.y,speed:0};C.setPointerCapture?.(e.pointerId)},{passive:false});C.addEventListener('pointermove',e=>{if(!pointer)return;const p=pos(e);pointer.speed=Math.hypot(p.x-pointer.lx,p.y-pointer.ly);pointer.x=p.x;pointer.y=p.y;pointer.lx=p.x;pointer.ly=p.y});['pointerup','pointercancel'].forEach(n=>C.addEventListener(n,()=>pointer=null));document.querySelectorAll('.bar button').forEach(b=>b.onclick=()=>{hint.classList.add('hide');const a=b.dataset.a,x=pointer?.x||W/2,y=pointer?.y||H*.45;if(a==='wave')push(x,y,1);if(a==='spin'){for(let i=0;i<3;i++)push(x+rnd(-50,50),y+rnd(-50,50),.7)}if(a==='star'){for(let i=0;i<8;i++)push(rnd(W*.12,W*.88),rnd(H*.18,H*.72),.45)}if(a==='bloom')push(x,y,1.5)});function slide(e){const r=track.getBoundingClientRect(),v=clamp((e.clientX-r.left)/r.width,0,1);R=48+v*155;fill.style.width=v*100+'%';knob.style.left=v*100+'%'}document.getElementById('size').addEventListener('pointerdown',e=>{e.preventDefault();slide(e)});document.getElementById('size').addEventListener('pointermove',e=>{if(e.buttons)slide(e)});load().finally(()=>{resize();addEventListener('resize',resize);requestAnimationFrame(loop)})})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06050f">
+<meta name="description" content="Many Thierrys – aufgebaut auf der bewährten Many-Oris-V3-Mechanik.">
+<title>Many Thierrys – wird geladen</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06050f;color:#ddd8f6;font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:grid;place-items:center;text-align:center}
+#loading{max-width:80vw;line-height:1.5;opacity:.75}
+</style>
+</head>
+<body>
+<div id="loading">Die Menge wird vorbereitet …</div>
+<script src="./pose1.js?v=9"></script>
+<script src="./pose2.js?v=9"></script>
+<script src="./pose3.js?v=9"></script>
+<script>
+(async()=>{
+  const loading=document.getElementById('loading');
+
+  function patch(source,pattern,replacement,label){
+    const result=source.replace(pattern,replacement);
+    if(result===source) throw new Error('Patch fehlgeschlagen: '+label);
+    return result;
+  }
+
+  function loadImage(src){
+    return new Promise(resolve=>{
+      if(!src){resolve(null);return;}
+      const image=new Image();
+      let done=false;
+      const finish=value=>{if(done)return;done=true;resolve(value)};
+      image.onload=()=>finish(image);
+      image.onerror=()=>finish(null);
+      image.src=src;
+      setTimeout(()=>finish(null),3500);
+    });
+  }
+
+  async function createAtlas(){
+    const sources=(window.MANY_THIERRYS_POSES||[]).filter(Boolean).slice(0,3);
+    const loaded=(await Promise.all(sources.map(loadImage))).filter(Boolean);
+    if(!loaded.length) throw new Error('Keine Thierry-Pose konnte geladen werden.');
+    while(loaded.length<3) loaded.push(loaded[0]);
+
+    const FW=90,CH=180,PAD=2,STEP=92;
+    const canvas=document.createElement('canvas');
+    canvas.width=STEP*3+2;
+    canvas.height=CH+4;
+    const context=canvas.getContext('2d');
+    context.clearRect(0,0,canvas.width,canvas.height);
+    context.imageSmoothingEnabled=true;
+    try{context.imageSmoothingQuality='high'}catch(e){}
+
+    loaded.slice(0,3).forEach((image,index)=>{
+      const scale=Math.min(FW/image.naturalWidth,CH/image.naturalHeight);
+      const width=image.naturalWidth*scale;
+      const height=image.naturalHeight*scale;
+      const dx=PAD+index*STEP+(FW-width)/2;
+      const dy=PAD+CH-height;
+      context.drawImage(image,dx,dy,width,height);
+    });
+    return canvas.toDataURL('image/png');
+  }
+
+  try{
+    const atlas=await createAtlas();
+    const response=await fetch('../many_oris_v2/index.html?v=20260627-9',{cache:'no-store'});
+    if(!response.ok) throw new Error('Many Oris V2 konnte nicht geladen werden ('+response.status+').');
+    let html=await response.text();
+
+    html=patch(html,'<title>In der Menge</title>','<title>Many Thierrys</title>','Titel');
+    html=patch(html,'Zieh den Schwarm — oder löse unten eine Fähigkeit aus.','Zieh durch die Menge – die Thierrys weichen aus und schieben einander weiter.','Hinweis');
+    html=patch(html,'const FW=198, CH=320, ANGRY=4;','const FW=90, CH=180, ANGRY=2;','Atlas-Grösse');
+    html=patch(html,'const FRAMES=[0,1,2,3,4].map(i=>({sx:4+i*202,sy:0,sw:FW,sh:CH}));','const FRAMES=[0,1,2].map(i=>({sx:2+i*92,sy:2,sw:FW,sh:CH}));','Atlas-Frames');
+    html=patch(html,'const POSE_WEIGHTS=[0.64,0.11,0.12,0.13];','const POSE_WEIGHTS=[0.38,0.31,0.31];','Posen');
+
+    const spriteLoader='const sprite=new Image(); sprite.src='+JSON.stringify(atlas)+';';
+    html=patch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,spriteLoader,'Sprite');
+
+    // Mechanik und Reaktionsgefühl direkt von V3.
+    html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.145, 0.285], OPEN_EASE: 0.27,','Reaktion');
+    html=patch(html,'REACH: 2.3,','REACH: 2.8,','Reichweite');
+    html=patch(html,'let dx=baseX-p.x, dy=baseY-p.y, d=Math.hypot(dx,dy);','let dx=baseX-p.x, dy=(baseY-c.dh*0.48)-p.y, d=Math.hypot(dx,dy);','Ganzkörper-Trefferzone');
+    html=patch(html,'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * c.dodge;','const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * (1.15+c.dodge*0.28);','Verdrängung');
+    html=patch(html,
+      'const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;\n    c.velx+=(dvx-c.velx)*c.inert; c.vely+=(dvy-c.vely)*c.inert;',
+      `const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;
+    const urgency=clamp(maxDisp/Math.max(1,Reff),0,1),response=c.inert+urgency*0.22;
+    c.velx+=(dvx-c.velx)*response; c.vely+=(dvy-c.vely)*response;
+    if(urgency>0.01){c.velx+=(tx-c.x)*(0.028+urgency*0.052);c.vely+=(ty-c.y)*(0.028+urgency*0.052);}`,
+      'Direkter Impuls');
+
+    const collision=`
+function resolveCrowdSeparation(){
+  const cell=32,grid=new Map(),active=[];
+  for(let i=0;i<crowd.length;i++){
+    const c=crowd[i];c._cx=c.x;c._cy=c.y-c.dh*0.48;
+    const gx=Math.floor(c._cx/cell),gy=Math.floor(c._cy/cell),key=gx+','+gy;
+    let bucket=grid.get(key);if(!bucket){bucket=[];grid.set(key,bucket)}bucket.push(i);
+    if(c.att>0.012||c.anger>0.04||c.spark>0.04||Math.hypot(c.velx,c.vely)>0.20)active.push(i);
+  }
+  for(let pass=0;pass<2;pass++)for(const i of active){
+    const a=crowd[i],gx=Math.floor(a._cx/cell),gy=Math.floor(a._cy/cell);
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
+      const bucket=grid.get((gx+ox)+','+(gy+oy));if(!bucket)continue;
+      for(const j of bucket){if(j<=i)continue;const b=crowd[j];
+        let dx=a.x-b.x,dy=((a.y-a.dh*0.48)-(b.y-b.dh*0.48))*0.72,d=Math.hypot(dx,dy);
+        const min=Math.max(10,(a.dw+b.dw)*0.38);if(d>=min)continue;
+        if(d<0.01){dx=0.01;dy=0.01;d=0.014}const nx=dx/d,ny=dy/d,over=min-d;
+        const move=Math.min(3.2,over*0.22),kick=Math.min(2.3,0.08+over*0.17);
+        a.x+=nx*move;a.y+=ny*move*0.72;b.x-=nx*move;b.y-=ny*move*0.72;
+        a.velx+=nx*kick;a.vely+=ny*kick*0.72;b.velx-=nx*kick;b.vely-=ny*kick*0.72;
+        a.att=Math.max(a.att,0.25);b.att=Math.max(b.att,0.21);
+      }
+    }
+  }
+}
+`;
+    html=patch(html,'function step(now){',collision+'\nfunction step(now){','Kollisionsphysik');
+    html=patch(html,'  stir=frameStir;','  resolveCrowdSeparation();\n  stir=frameStir;','Kollisionsaufruf');
+    html=html.replace('</head>','<style>html,body{background:#06050f!important}canvas{background:#06050f}</style></head>');
+
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(error){
+    console.error(error);
+    loading.textContent='Das Spiel konnte nicht geladen werden. Bitte die Seite neu laden.';
+  }
+})();
+</script>
+</body>
+</html>
