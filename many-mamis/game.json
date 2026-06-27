@@ -1,0 +1,9 @@
+{
+  "title": "Many Mamis",
+  "description": "Das Many-Oris-Schwarmspiel mit drei Mami-Posen.",
+  "icon": "M",
+  "tag": "Neu",
+  "series": "other",
+  "priority": 340,
+  "glow": "rgba(255,164,211,.24)"
+}
