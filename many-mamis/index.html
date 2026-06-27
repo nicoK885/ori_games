@@ -35,7 +35,7 @@ body{display:grid;place-items:center;text-align:center}#loading{max-width:80vw;l
     images.forEach((image,index)=>atlasContext.drawImage(image,index*180,0,180,360));
     window.MANY_MAMIS_ATLAS=atlasCanvas.toDataURL('image/png');
 
-    const response=await fetch('../many_oris_v2/index.html?v=20260627-5',{cache:'no-store'});
+    const response=await fetch('../many_oris_v2/index.html?v=20260627-6',{cache:'no-store'});
     if(!response.ok)throw new Error('Many Oris V2 konnte nicht geladen werden ('+response.status+').');
     let html=await response.text();
 
@@ -49,47 +49,64 @@ body{display:grid;place-items:center;text-align:center}#loading{max-width:80vw;l
     html=patch(html,/const sprite=new Image\(\); sprite\.src="data:image\/png;base64,[^"]+";/,spriteLoader,'Sprite');
     html=patch(html,"const canvas=document.getElementById('c'); const ctx=canvas.getContext('2d');","const canvas=document.getElementById('c'); const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=true; try{ctx.imageSmoothingQuality='high';}catch(e){}",'Bildqualität');
 
-    html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.085, 0.155], OPEN_EASE: 0.12,','Ruhige Reaktion');
+    html=patch(html,'FOLLOW: [0.080, 0.190], OPEN_EASE: 0.16,','FOLLOW: [0.050, 0.105], OPEN_EASE: 0.08,','Ruhige Reaktion');
     html=patch(html,'REACH: 2.3,','REACH: 2.45,','Reichweite');
-    html=patch(html,'BOW: 0.5,','BOW: 0.12,','Sanfte Bugwelle');
-    html=patch(html,'BOW_MIN: 1.5,','BOW_MIN: 3.8,','Bugwellen-Schwelle');
+    html=patch(html,'BOW: 0.5,','BOW: 0.0,','Bugwelle deaktivieren');
+    html=patch(html,'BOW_MIN: 1.5,','BOW_MIN: Infinity,','Bugwellen-Schwelle');
     html=patch(html,'let dx=baseX-p.x, dy=baseY-p.y, d=Math.hypot(dx,dy);','let dx=baseX-p.x, dy=(baseY-c.dh*0.48)-p.y, d=Math.hypot(dx,dy);','Ganzkörper-Trefferzone');
-    html=patch(html,'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * c.dodge;','const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * (0.72+c.dodge*0.12);','Sanfte Verdrängung');
+    html=patch(html,'const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * c.dodge;','const disp=(Math.sqrt(d*d+rr*rr)-d) * fall * (0.42+c.dodge*0.06);','Sanfte Verdrängung');
     html=patch(html,
       'const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;\n    c.velx+=(dvx-c.velx)*c.inert; c.vely+=(dvy-c.vely)*c.inert;',
       `const dvx=(tx-c.x)*c.follow, dvy=(ty-c.y)*c.follow;
-    const urgency=clamp(maxDisp/Math.max(1,Reff),0,1),response=c.inert*0.62+urgency*0.04;
+    const urgency=clamp(maxDisp/Math.max(1,Reff),0,1),response=c.inert*0.42+urgency*0.018;
     c.velx+=(dvx-c.velx)*response; c.vely+=(dvy-c.vely)*response;`,
       'Weicher Impuls');
+    html=patch(html,
+      'const ph=now*0.00045, ph2=now*0.0009, maxS=Math.max(24,R*0.54), REACH=CONFIG.REACH;',
+      'const ph=now*0.00045, ph2=now*0.0009, maxS=Math.max(12,R*0.24), REACH=CONFIG.REACH;',
+      'Maximale Geschwindigkeit');
 
-    const collision=`
-function resolveCrowdSeparation(){
-  const cell=34,grid=new Map(),active=[];
-  for(let i=0;i<crowd.length;i++){
-    const c=crowd[i];c._cx=c.x;c._cy=c.y-c.dh*0.48;
-    const gx=Math.floor(c._cx/cell),gy=Math.floor(c._cy/cell),key=gx+','+gy;
-    let bucket=grid.get(key);if(!bucket){bucket=[];grid.set(key,bucket)}bucket.push(i);
-    if(c.att>0.02||c.anger>0.08||c.spark>0.08||Math.hypot(c.velx,c.vely)>0.30)active.push(i);
-  }
-  for(const i of active){
-    const a=crowd[i],gx=Math.floor(a._cx/cell),gy=Math.floor(a._cy/cell);
-    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){
-      const bucket=grid.get((gx+ox)+','+(gy+oy));if(!bucket)continue;
-      for(const j of bucket){if(j<=i)continue;const b=crowd[j];
-        let dx=a.x-b.x,dy=((a.y-a.dh*0.48)-(b.y-b.dh*0.48))*0.72,d=Math.hypot(dx,dy);
-        const min=Math.max(10,(a.dw+b.dw)*0.35);if(d>=min)continue;
-        if(d<0.01){dx=0.01;dy=0.01;d=0.014}const nx=dx/d,ny=dy/d,over=min-d;
-        const move=Math.min(0.85,over*0.08),kick=Math.min(0.42,0.02+over*0.04);
-        a.x+=nx*move;a.y+=ny*move*0.72;b.x-=nx*move;b.y-=ny*move*0.72;
-        a.velx+=nx*kick;a.vely+=ny*kick*0.72;b.velx-=nx*kick;b.vely-=ny*kick*0.72;
-        a.att=Math.max(a.att,0.17);b.att=Math.max(b.att,0.15);
-      }
-    }
-  }
-}
-`;
-    html=patch(html,'function step(now){',collision+'\nfunction step(now){','Kollisionsphysik');
-    html=patch(html,'  stir=frameStir;','  resolveCrowdSeparation();\n  stir=frameStir;','Kollisionsaufruf');
+    html=patch(html,
+      `function setPt(key,x,y){ lastAimX=x; lastAimY=y; const p=pts.get(key);
+  if(p){ p.vx=(x-p.x)*0.5+p.vx*0.5; p.vy=(y-p.y)*0.5+p.vy*0.5; p.x=x; p.y=y; p.tgt=1; }
+  else pts.set(key,{x,y,vx:0,vy:0,str:0,tgt:1}); }`,
+      `function setPt(key,x,y){ lastAimX=x; lastAimY=y; const p=pts.get(key);
+  if(p){ p.rawX=x; p.rawY=y; p.tgt=1; }
+  else pts.set(key,{x,y,rawX:x,rawY:y,vx:0,vy:0,str:0,tgt:1}); }`,
+      'Pointer-Ziel');
+    html=patch(html,
+      `for(const [k,p] of pts){ p.str+=(p.tgt-p.str)*CONFIG.OPEN_EASE; if(p.tgt===0&&p.str<0.02) pts.delete(k);
+    p.vx*=0.86; p.vy*=0.86; }`,
+      `for(const [k,p] of pts){
+    const rawX=p.rawX===undefined?p.x:p.rawX, rawY=p.rawY===undefined?p.y:p.rawY;
+    const prevX=p.x, prevY=p.y;
+    p.x+=(rawX-p.x)*0.18; p.y+=(rawY-p.y)*0.18;
+    const moveX=p.x-prevX, moveY=p.y-prevY;
+    p.vx+=(moveX-p.vx)*0.20; p.vy+=(moveY-p.vy)*0.20;
+    p.str+=(p.tgt-p.str)*CONFIG.OPEN_EASE;
+    if(p.tgt===0&&p.str<0.02) pts.delete(k);
+  }`,
+      'Pointer-Filter');
+
+    html=patch(html,
+      `addEventListener('pointerdown',e=>{ if(e.target!==canvas) return; hideHint(); initAudio(); firstTouch=true;
+  setPt(e.pointerType==='mouse'?'mouse':e.pointerId,e.clientX,e.clientY);
+  // Stärke variiert je Tap: leichte Zufallswürze + Druck (falls vorhanden) + Combo bei schnellen Taps
+  let str = 0.34 + Math.random()*0.34;
+  if(e.pressure>0.01 && Math.abs(e.pressure-0.5)>0.001) str *= (0.55+e.pressure*0.95);
+  const tnow=performance.now();
+  if(tnow-lastTap<450 && Math.hypot(e.clientX-lastTapX,e.clientY-lastTapY)<120) combo=Math.min(combo+1,4); else combo=0;
+  str *= (1+combo*0.18); str=clamp(str,0.22,1.1);
+  lastTap=tnow; lastTapX=e.clientX; lastTapY=e.clientY;
+  spawnShock(e.clientX,e.clientY,str); whoomp(str); buzz(8+Math.round(str*16)); },{passive:true});`,
+      `addEventListener('pointerdown',e=>{ if(e.target!==canvas) return; hideHint(); initAudio(); firstTouch=true;
+  setPt(e.pointerType==='mouse'?'mouse':e.pointerId,e.clientX,e.clientY); },{passive:true});`,
+      'Keine Touch-Welle');
+    html=patch(html,
+      `if(!firstTouch && now>nextInvite){ spawnShock(W/2,H*0.52,0.5); nextInvite=now+3600; }  // Lockruf`,
+      `if(!firstTouch && now>nextInvite){ nextInvite=now+3600; }  // keine automatische Welle`,
+      'Keine automatische Welle');
+
     html=html.replace('</head>','<style>html,body{background:#06050f!important}canvas{background:#06050f}</style></head>');
 
     document.open();document.write(html);document.close();
