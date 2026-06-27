@@ -27,16 +27,18 @@ h1{font-size:clamp(64px,15vw,152px);line-height:.82;letter-spacing:-.09em;font-w
 .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;font-weight:950;border:1px solid rgba(255,255,255,.15);transition:transform .16s ease,filter .16s ease}
 .btn:active{transform:scale(.97)}
-.btn.primary{color:#11101a;background:linear-gradient(180deg,#f5f0ff,#b79cff);box-shadow:0 16px 38px rgba(183,156,255,.24)}
+.btn.primary{color:#11101a;background:linear-gradient(180deg,#fff0f8,#ffabd5);box-shadow:0 16px 38px rgba(255,164,211,.24)}
 .btn.ghost{background:rgba(255,255,255,.055);color:#fff}
 .section{margin-top:44px}
 .section-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:18px}
 h2{font-size:clamp(32px,6vw,54px);letter-spacing:-.055em}
 .section-head p{max-width:560px;color:var(--muted);line-height:1.6;font-weight:680}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .card{position:relative;min-height:280px;overflow:hidden;padding:24px;border-radius:30px;border:1px solid rgba(255,255,255,.14);background:radial-gradient(circle at 82% 12%,rgba(255,216,119,.22),transparent 16rem),linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045));box-shadow:0 20px 60px rgba(0,0,0,.28);display:flex;flex-direction:column;justify-content:space-between;gap:24px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.card.mamis{background:radial-gradient(circle at 82% 12%,rgba(255,164,211,.25),transparent 16rem),linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045))}
 .card:hover,.card:focus-visible{transform:translateY(-5px);border-color:rgba(255,255,255,.28);box-shadow:0 26px 76px rgba(0,0,0,.36);outline:none}
-.card::after{content:"T";position:absolute;right:-10px;bottom:-34px;font-size:190px;font-weight:950;line-height:.8;color:rgba(255,255,255,.035);pointer-events:none}
+.card::after{position:absolute;right:-10px;bottom:-34px;font-size:190px;font-weight:950;line-height:.8;color:rgba(255,255,255,.035);pointer-events:none}
+.card.thierrys::after{content:"T"}.card.mamis::after{content:"M"}
 .card>*{position:relative;z-index:1}
 .badge{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .icon{width:58px;height:58px;display:grid;place-items:center;border-radius:20px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);font-size:24px;font-weight:950}
@@ -46,7 +48,6 @@ h2{font-size:clamp(32px,6vw,54px);letter-spacing:-.055em}
 .open{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;font-weight:900}
 .arrow{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#11101a;background:linear-gradient(180deg,#f4f0ff,#b79cff)}
 footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:36px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.42);font-size:13px;font-weight:760}
-@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.shell{width:min(100% - 20px,1120px)}nav{margin-bottom:14px}.navlink{display:none}.hero{min-height:430px;border-radius:30px}.section-head{display:block}.section-head p{margin-top:9px}.grid{grid-template-columns:1fr}.card{min-height:250px}}
 </style>
 </head>
@@ -57,13 +58,18 @@ footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin
 <div class="kicker">Viele Figuren · direkte Interaktion</div>
 <h1>Manys.</h1>
 <p class="lead">Eine eigenständige Sammlung für Spiele mit vielen Figuren, verschiedenen Posen und direkter Bewegung.</p>
-<div class="actions"><a class="btn primary" href="./many_thierrys/">Many Thierrys spielen</a><a class="btn ghost" href="#spiele">Alle Spiele</a></div>
+<div class="actions"><a class="btn primary" href="./many-mamis/">Many Mamis spielen</a><a class="btn ghost" href="./many_thierrys/">Many Thierrys spielen</a><a class="btn ghost" href="#spiele">Alle Spiele</a></div>
 </section>
 <section class="section" id="spiele">
-<div class="section-head"><div><h2>Spiele</h2><p>Die Sammlung startet mit Many Thierrys. Weitere Many-Spiele kommen hier dazu.</p></div></div>
+<div class="section-head"><div><h2>Spiele</h2><p>Many Mamis und Many Thierrys: drei Posen, Schwarmbewegung und direkte Interaktion.</p></div></div>
 <div class="grid">
-<a class="card" href="./many_thierrys/">
-<div class="badge"><span class="icon">T</span><span class="tag">Neu</span></div>
+<a class="card mamis" href="./many-mamis/">
+<div class="badge"><span class="icon">M</span><span class="tag">Neu</span></div>
+<div><h3>Many Mamis</h3><p>Drei Mami-Posen, Schwarmbewegung, Welle, Wirbel, Sterne und Blüte.</p></div>
+<div class="open"><span>Jetzt spielen</span><span class="arrow">→</span></div>
+</a>
+<a class="card thierrys" href="./many_thierrys/">
+<div class="badge"><span class="icon">T</span><span class="tag">Spiel</span></div>
 <div><h3>Many Thierrys</h3><p>Drei Thierry-Posen, Schwarmbewegung, Welle, Wirbel, Sterne und Blüte.</p></div>
 <div class="open"><span>Jetzt spielen</span><span class="arrow">→</span></div>
 </a>
