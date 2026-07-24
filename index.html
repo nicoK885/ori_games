@@ -3,79 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#09090f">
-<meta name="description" content="Manys – interaktive Spiele mit vielen Figuren und direkter Bewegung.">
-<title>Manys</title>
+<meta name="theme-color" content="#090b13">
+<meta name="description" content="Eine Sammlung kleiner interaktiver Browser-Spiele: Ori, Manys und eigenständige Originale.">
+<title>Browser Games</title>
 <style>
-:root{--bg:#09090f;--panel:rgba(255,255,255,.07);--line:rgba(255,255,255,.12);--text:#f7f5ff;--muted:#aaa6bb;--violet:#b79cff;--cyan:#88e7ff;--shadow:0 28px 90px rgba(0,0,0,.42)}
+:root{--bg:#090b13;--panel:#111522;--panel2:#171d2d;--line:rgba(255,255,255,.11);--text:#f6f7fb;--muted:#aab1c2;--cyan:#70e1ef;--violet:#c3a6ff;--gold:#ffd37a;--rose:#ff9abd;--green:#94edbe}
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--bg);scroll-behavior:smooth}
-body{min-height:100vh;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 18% 8%,rgba(183,156,255,.22),transparent 28rem),radial-gradient(circle at 86% 16%,rgba(136,231,255,.15),transparent 26rem),linear-gradient(180deg,#08080e,#0e0d18 54%,#08080e);overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(circle at 50% 18%,black,transparent 76%)}
+body{min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 10% 0%,rgba(112,225,239,.14),transparent 28rem),radial-gradient(circle at 92% 5%,rgba(195,166,255,.15),transparent 32rem),linear-gradient(180deg,#080a11,#0c101b 60%,#090b13);overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.shell{position:relative;z-index:1;width:min(1120px,calc(100% - 32px));margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 0 56px}
-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
-.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
-.mark{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(183,156,255,.28),rgba(136,231,255,.2));border:1px solid rgba(255,255,255,.17);font-size:22px;box-shadow:0 0 32px rgba(183,156,255,.18)}
-.navlink{display:inline-flex;align-items:center;min-height:42px;padding:0 15px;border-radius:999px;color:var(--muted);background:rgba(255,255,255,.055);border:1px solid var(--line);font-size:13px;font-weight:850}
-.hero{position:relative;overflow:hidden;min-height:470px;padding:clamp(30px,7vw,76px);border-radius:38px;border:1px solid rgba(255,255,255,.14);background:radial-gradient(circle at 78% 18%,rgba(183,156,255,.25),transparent 24rem),radial-gradient(circle at 16% 88%,rgba(136,231,255,.12),transparent 26rem),linear-gradient(145deg,rgba(255,255,255,.1),rgba(255,255,255,.035));box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center}
-.hero::after{content:"M";position:absolute;right:clamp(-18px,4vw,28px);bottom:-64px;font-size:clamp(260px,48vw,520px);line-height:.8;font-weight:950;color:rgba(255,255,255,.035);letter-spacing:-.12em;pointer-events:none}
-.hero>*{position:relative;z-index:1}
-.kicker{color:var(--cyan);font-size:12px;font-weight:950;letter-spacing:.25em;text-transform:uppercase;margin-bottom:20px}
-h1{font-size:clamp(64px,15vw,152px);line-height:.82;letter-spacing:-.09em;font-weight:950;background:linear-gradient(180deg,#fff 12%,#dcd2ff 66%,#91e9ff 110%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{max-width:690px;margin-top:26px;color:var(--muted);font-size:clamp(17px,2.8vw,21px);line-height:1.7;font-weight:680}
-.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;font-weight:950;border:1px solid rgba(255,255,255,.15);transition:transform .16s ease,filter .16s ease}
-.btn:active{transform:scale(.97)}
-.btn.primary{color:#11101a;background:linear-gradient(180deg,#fff0f8,#ffabd5);box-shadow:0 16px 38px rgba(255,164,211,.24)}
-.btn.ghost{background:rgba(255,255,255,.055);color:#fff}
-.section{margin-top:44px}
-.section-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:18px}
-h2{font-size:clamp(32px,6vw,54px);letter-spacing:-.055em}
-.section-head p{max-width:560px;color:var(--muted);line-height:1.6;font-weight:680}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.card{position:relative;min-height:280px;overflow:hidden;padding:24px;border-radius:30px;border:1px solid rgba(255,255,255,.14);background:radial-gradient(circle at 82% 12%,rgba(255,216,119,.22),transparent 16rem),linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045));box-shadow:0 20px 60px rgba(0,0,0,.28);display:flex;flex-direction:column;justify-content:space-between;gap:24px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.card.mamis{background:radial-gradient(circle at 82% 12%,rgba(255,164,211,.25),transparent 16rem),linear-gradient(180deg,rgba(255,255,255,.105),rgba(255,255,255,.045))}
-.card:hover,.card:focus-visible{transform:translateY(-5px);border-color:rgba(255,255,255,.28);box-shadow:0 26px 76px rgba(0,0,0,.36);outline:none}
-.card::after{position:absolute;right:-10px;bottom:-34px;font-size:190px;font-weight:950;line-height:.8;color:rgba(255,255,255,.035);pointer-events:none}
-.card.thierrys::after{content:"T"}.card.mamis::after{content:"M"}
-.card>*{position:relative;z-index:1}
-.badge{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.icon{width:58px;height:58px;display:grid;place-items:center;border-radius:20px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);font-size:24px;font-weight:950}
-.tag{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border-radius:999px;background:linear-gradient(180deg,#f6f0ff,#c6afff);color:#171320;font-size:11px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
-.card h3{font-size:32px;letter-spacing:-.045em;line-height:1}
-.card p{margin-top:10px;color:var(--muted);line-height:1.55;font-weight:650}
-.open{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;font-weight:900}
-.arrow{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#11101a;background:linear-gradient(180deg,#f4f0ff,#b79cff)}
-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:36px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.42);font-size:13px;font-weight:760}
-@media(max-width:700px){.shell{width:min(100% - 20px,1120px)}nav{margin-bottom:14px}.navlink{display:none}.hero{min-height:430px;border-radius:30px}.section-head{display:block}.section-head p{margin-top:9px}.grid{grid-template-columns:1fr}.card{min-height:250px}}
+.shell{width:min(1160px,calc(100% - 28px));margin:auto;padding:calc(env(safe-area-inset-top) + 18px) 0 52px}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(112,225,239,.28),rgba(195,166,255,.28));border:1px solid var(--line);box-shadow:0 0 28px rgba(112,225,239,.12)}.navlinks{display:flex;gap:8px}.navlinks a{padding:10px 13px;border-radius:999px;color:var(--muted);font-size:13px;font-weight:800;border:1px solid transparent}.navlinks a:hover{color:var(--text);border-color:var(--line);background:rgba(255,255,255,.04)}
+.hero{position:relative;overflow:hidden;min-height:410px;padding:clamp(30px,7vw,72px);border:1px solid var(--line);border-radius:34px;background:radial-gradient(circle at 78% 20%,rgba(195,166,255,.22),transparent 24rem),radial-gradient(circle at 15% 90%,rgba(112,225,239,.13),transparent 24rem),rgba(255,255,255,.045);box-shadow:0 30px 100px rgba(0,0,0,.32);display:flex;flex-direction:column;justify-content:center}.hero:after{content:"PLAY";position:absolute;right:-35px;bottom:-28px;font-size:clamp(90px,20vw,230px);font-weight:1000;letter-spacing:-.08em;color:rgba(255,255,255,.025);pointer-events:none}.hero>*{position:relative;z-index:1}.kicker{font-size:12px;font-weight:950;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:18px}h1{max-width:850px;font-size:clamp(54px,12vw,126px);line-height:.86;letter-spacing:-.075em;background:linear-gradient(180deg,#fff,#dfe9ff 58%,#90e9f1);-webkit-background-clip:text;background-clip:text;color:transparent}.lead{max-width:720px;margin-top:24px;color:var(--muted);font-size:clamp(17px,2.6vw,21px);line-height:1.65;font-weight:620}.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:999px;font-weight:900;border:1px solid var(--line);background:rgba(255,255,255,.055)}.button.primary{color:#071016;background:linear-gradient(180deg,#d9fbff,#70e1ef);border-color:transparent}.button:active{transform:scale(.98)}
+.section{margin-top:42px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:16px}.section-head h2{font-size:clamp(30px,5vw,48px);letter-spacing:-.045em}.section-head p{max-width:610px;color:var(--muted);line-height:1.55;font-weight:620}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.card{position:relative;overflow:hidden;min-height:250px;padding:23px;border:1px solid var(--line);border-radius:27px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));box-shadow:0 18px 55px rgba(0,0,0,.22);display:flex;flex-direction:column;justify-content:space-between;gap:25px;transition:transform .18s,border-color .18s,box-shadow .18s}.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:rgba(255,255,255,.25);box-shadow:0 24px 70px rgba(0,0,0,.3);outline:none}.card:after{content:attr(data-letter);position:absolute;right:-8px;bottom:-38px;font-size:180px;font-weight:1000;line-height:.8;color:rgba(255,255,255,.035);pointer-events:none}.card>*{position:relative;z-index:1}.card.lumen{background:radial-gradient(circle at 85% 8%,rgba(69,240,208,.18),transparent 15rem),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))}.card.sumi{background:radial-gradient(circle at 85% 8%,rgba(255,211,122,.16),transparent 15rem),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))}.card.schwarm{background:radial-gradient(circle at 85% 8%,rgba(255,154,189,.16),transparent 15rem),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))}.card.bewohner{background:radial-gradient(circle at 85% 8%,rgba(195,166,255,.19),transparent 15rem),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.icon{width:55px;height:55px;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:24px;font-weight:950}.pill{display:inline-flex;align-items:center;min-height:27px;padding:0 9px;border-radius:999px;background:rgba(255,255,255,.09);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:#e9ecf8}.card h3{font-size:31px;line-height:1;letter-spacing:-.04em}.card p{margin-top:10px;color:var(--muted);line-height:1.52;font-weight:610}.open{display:flex;align-items:center;justify-content:space-between;font-weight:900}.arrow{width:37px;height:37px;border-radius:50%;display:grid;place-items:center;background:#eef3ff;color:#10131d}.note{margin-top:24px;padding:18px 20px;border:1px solid var(--line);border-radius:20px;color:var(--muted);background:rgba(255,255,255,.035);line-height:1.55}.note strong{color:var(--text)}footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:38px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.42);font-size:13px;font-weight:720}
+@media(max-width:720px){.shell{width:min(100% - 18px,1160px)}.navlinks{display:none}.hero{min-height:390px;border-radius:28px}.section-head{display:block}.section-head p{margin-top:8px}.grid{grid-template-columns:1fr}.card{min-height:230px}}
 </style>
 </head>
 <body>
 <main class="shell">
-<nav><a class="brand" href="./"><span class="mark">M</span><span>Manys</span></a><a class="navlink" href="#spiele">Spiele</a></nav>
+<nav><a class="brand" href="./"><span class="logo">◈</span><span>Browser Games</span></a><div class="navlinks"><a href="#ori">Ori</a><a href="#manys">Manys</a><a href="#originale">Originale</a></div></nav>
 <section class="hero">
-<div class="kicker">Viele Figuren · direkte Interaktion</div>
-<h1>Manys.</h1>
-<p class="lead">Eine eigenständige Sammlung für Spiele mit vielen Figuren, verschiedenen Posen und direkter Bewegung.</p>
-<div class="actions"><a class="btn primary" href="./many-mamis/">Many Mamis spielen</a><a class="btn ghost" href="./many_thierrys/">Many Thierrys spielen</a><a class="btn ghost" href="#spiele">Alle Spiele</a></div>
+<div class="kicker">Kleine Spiele · direkt im Browser</div>
+<h1>Tippen. Ziehen. Chaos.</h1>
+<p class="lead">Eine klar sortierte Sammlung aus Ori-Spielen, Figuren-Schwärmen und eigenständigen Experimenten. Kein Download, keine Installation – einfach öffnen und spielen.</p>
+<div class="hero-actions"><a class="button primary" href="#originale">Neue Spiele ansehen</a><a class="button" href="#ori">Ori-Spiele</a></div>
 </section>
-<section class="section" id="spiele">
-<div class="section-head"><div><h2>Spiele</h2><p>Many Mamis und Many Thierrys: drei Posen, Schwarmbewegung und direkte Interaktion.</p></div></div>
-<div class="grid">
-<a class="card mamis" href="./many-mamis/">
-<div class="badge"><span class="icon">M</span><span class="tag">Neu</span></div>
-<div><h3>Many Mamis</h3><p>Drei Mami-Posen, Schwarmbewegung, Welle, Wirbel, Sterne und Blüte.</p></div>
-<div class="open"><span>Jetzt spielen</span><span class="arrow">→</span></div>
-</a>
-<a class="card thierrys" href="./many_thierrys/">
-<div class="badge"><span class="icon">T</span><span class="tag">Spiel</span></div>
-<div><h3>Many Thierrys</h3><p>Drei Thierry-Posen, Schwarmbewegung, Welle, Wirbel, Sterne und Blüte.</p></div>
-<div class="open"><span>Jetzt spielen</span><span class="arrow">→</span></div>
-</a>
-</div>
-</section>
-<footer><span>Manys</span><span>GitHub Pages Game Collection</span></footer>
+<section class="section" id="ori"><div class="section-head"><div><h2>Ori-Spiele</h2><p>Die Spiele, die wirklich zur Ori-Welt gehören. Alte Versionsnamen bleiben technisch im Hintergrund; öffentlich gibt es nur die klaren Spielnamen.</p></div></div><div class="grid">
+<a class="card" data-letter="O" href="./games/ori/many-oris/"><div class="top"><span class="icon">O</span><span class="pill">Ori</span></div><div><h3>Many Oris</h3><p>Ein dichter Schwarm aus Ori-Figuren mit direkter Bewegung, Verdrängung und spielerischen Fähigkeiten.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+<a class="card" data-letter="J" href="./games/ori/ori-jagd/"><div class="top"><span class="icon">◎</span><span class="pill">Ori</span></div><div><h3>Ori-Jagd</h3><p>Die endlose Moorhuhn-Variante: zielen, treffen, nachladen und den Highscore jagen.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+</div></section>
+<section class="section" id="manys"><div class="section-head"><div><h2>Manys</h2><p>Figuren-Schwärme auf derselben bewährten Mechanik – aber klar getrennt von den eigentlichen Ori-Spielen.</p></div></div><div class="grid">
+<a class="card" data-letter="M" href="./games/manys/many-mamis/"><div class="top"><span class="icon">M</span><span class="pill">Manys</span></div><div><h3>Many Mamis</h3><p>Drei Figuren-Posen, Schwarmbewegung, Welle, Wirbel, Sterne und Blüte.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+<a class="card" data-letter="T" href="./games/manys/many-thierrys/"><div class="top"><span class="icon">T</span><span class="pill">Manys</span></div><div><h3>Many Thierrys</h3><p>Drei Thierry-Posen mit direkter Interaktion und derselben flüssigen Schwarmphysik.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+</div></section>
+<section class="section" id="originale"><div class="section-head"><div><h2>Originale</h2><p>Vier eigenständige Spiele und Experimente, die nichts mit Ori zu tun haben.</p></div></div><div class="grid">
+<a class="card lumen" data-letter="L" href="./games/originals/lumen/"><div class="top"><span class="icon">✦</span><span class="pill">One Touch</span></div><div><h3>Lumen</h3><p>Springe von Lichtquelle zu Lichtquelle und tauche immer tiefer in den dunklen Abgrund.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+<a class="card sumi" data-letter="墨" href="./games/originals/sumi/"><div class="top"><span class="icon">墨</span><span class="pill">Action</span></div><div><h3>Sumi</h3><p>Friert die Zeit ein, richte die Klinge aus und verwandle jeden Kampf in ein Tuschebild.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+<a class="card schwarm" data-letter="S" href="./games/originals/schwarm/"><div class="top"><span class="icon">⌁</span><span class="pill">Schwarm</span></div><div><h3>Schwarm</h3><p>Führe einen Vogelschwarm durch Klippen, sammle Insekten und entkomme dem Falken.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+<a class="card bewohner" data-letter="?" href="./games/originals/seiten-bewohner/"><div class="top"><span class="icon">◌</span><span class="pill">Tageschaos</span></div><div><h3>Seiten-Bewohner</h3><p>Wirf Texte durch die Gegend, störe den Bewohner und entdecke jeden Tag neuen Unsinn.</p></div><div class="open"><span>Spielen</span><span class="arrow">→</span></div></a>
+</div><div class="note"><strong>Ordnung:</strong> Jedes Spiel wird auf dieser Seite genau einmal gezeigt. Die sauberen Links unter <code>games/</code> bleiben stabil, auch wenn interne Technik später ersetzt wird.</div></section>
+<footer><span>Browser Games</span><span>GitHub Pages · Mobile first</span></footer>
 </main>
 </body>
 </html>
